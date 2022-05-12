@@ -1,0 +1,44 @@
+image: node:15.12.0-alpine
+
+cache:
+    paths:
+        - node_modules/
+
+before_script:
+    - apk add g++ make python
+
+stages:
+    - install_dependencies
+    - code_quality
+    - build
+    - test
+
+install_dependencies:
+    stage: install_dependencies
+    script:
+        - npm install
+
+build:
+    stage: build
+    script:
+        - echo "Preparing production build..."
+        - npm run build
+        - echo "Build complete."
+
+check-formatting:
+    stage: code_quality
+    script:
+        - echo "Checking for formatting errors"
+        - npm run fmt
+
+lint:
+    stage: code_quality
+    script:
+        - echo "Checking for linting errors"
+        - npm run lint
+unit-test:
+    stage: test
+    script:
+        - echo "Running unit tests."
+        - npm run test
+### if want comment something then use # only
