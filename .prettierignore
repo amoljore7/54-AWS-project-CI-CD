@@ -1,0 +1,14 @@
+src/assets/*
+src/reportWebVitals
+src/assets/png
+src/typings.d.ts
+__mocks__/*
+.idea/*
+.vscode/*
+dist/*
+coverage/*
+jest-coverage/*
+**/.DS_Store
+
+
+
