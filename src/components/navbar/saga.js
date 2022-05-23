@@ -1,6 +1,6 @@
 import { put, takeLatest, all, fork, call } from 'redux-saga/effects';
 import { successAwsAccountDetails, failureAwsAccountDetails } from './action';
-import { fetchAwsAccountDetails } from '../../services/dashboard-service';
+import { fetchAwsAccountDetails } from '../../services/service';
 
 import { AwsAccountTypes } from './constants';
 

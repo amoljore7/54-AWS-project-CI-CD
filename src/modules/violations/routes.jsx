@@ -2,19 +2,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Route, Switch, withRouter } from 'react-router-dom';
 import Dashboard from './dashboard';
-import AllViolationsReport from './violations/all-report';
-import NewViolations from './violations/new-violations';
-import FixedViolations from './violations/fixed-violations';
-import ExistingViolations from './violations/existing-violations';
+import ViolationsDetails from './violations/ViolationsDetails';
 
 const DashboardRoutes = ({ match }) => {
     return (
         <Switch>
             <Route exact path={match.url} component={Dashboard} />
-            <Route path={`${match.url}all-reports`} component={AllViolationsReport} />
-            <Route path={`${match.url}new-violations`} component={NewViolations} />
-            <Route path={`${match.url}fixed-violations`} component={FixedViolations} />
-            <Route path={`${match.url}existing-violations`} component={ExistingViolations} />
+            <Route path={`${match.url}details`} component={ViolationsDetails} />
             {/* {TODO: Add routes here} */}
         </Switch>
     );

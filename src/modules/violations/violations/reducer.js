@@ -3,8 +3,9 @@ import { ViolationsTypes } from './constants';
 const initialState = {
     loading: false,
     error: null,
-    awsServices: {},
-    policiesAndTable: {},
+    services: {},
+    policies: {},
+    tableDetails: {},
 };
 
 export const violationReducer = (state = initialState, action) => {
@@ -15,27 +16,55 @@ export const violationReducer = (state = initialState, action) => {
                 loading: true,
             };
 
-        case ViolationsTypes.VIOLATIONS_SUCCESS:
+        case ViolationsTypes.SERVICES_VIOLATIONS_SUCCESS:
             return {
                 ...state,
                 loading: false,
-                awsServices: action.payload,
-                policiesAndTable: {},
+                services: action.payload,
+                policies: {},
+                tableDetails: {},
                 error: null,
             };
-        case ViolationsTypes.POLICIES_AND_TABLE_VIOLATIONS_SUCCESS:
-            return {
-                ...state,
-                loading: false,
-                policiesAndTable: action.payload,
-                error: null,
-            };
-
-        case ViolationsTypes.VIOLATIONS_FAILURE:
+        case ViolationsTypes.SERVICES_VIOLATIONS_FAILURE:
             return {
                 ...state,
                 loading: false,
                 error: action.payload,
+                services: {},
+                policies: {},
+                tableDetails: {},
+            };
+        case ViolationsTypes.POLICIES_VIOLATIONS_SUCCESS:
+            return {
+                ...state,
+                loading: false,
+                policies: action.payload,
+                tableDetails: {},
+                error: null,
+            };
+        case ViolationsTypes.POLICIES_VIOLATIONS_FAILURE:
+            return {
+                ...state,
+                loading: false,
+                error: action.payload,
+                policies: {},
+                tableDetails: {},
+            };
+
+        case ViolationsTypes.TABLE_DETAILS_SUCCESS:
+            return {
+                ...state,
+                loading: false,
+                tableDetails: action.payload,
+                error: null,
+            };
+
+        case ViolationsTypes.TABLE_DETAILS_FAILURE:
+            return {
+                ...state,
+                loading: false,
+                error: action.payload,
+                tableDetails: {},
             };
 
         case ViolationsTypes.VIOLATIONS_FLUSH_DATA:

@@ -1,7 +1,7 @@
 import { put, takeLatest, all, fork, call } from 'redux-saga/effects';
 import { DashboardViolationsTypes } from './constants';
 import { successDashboardViolations, failureDashboardViolations } from './action';
-import { fetchDashboardViolationsRecords } from '../../../services/dashboard-service';
+import { fetchDashboardViolationsRecords } from '../../../services/service';
 
 function* dashboardViolationsWatcher() {
     yield takeLatest(DashboardViolationsTypes.DASHBOARD_VIOLATIONS_REQUEST, dashboardViolationsWorker);

@@ -1,14 +1,32 @@
 import ApiServices from '../utils/api-service';
 
+/***** GET : Get Violation on landing page Api Call */
 export const fetchDashboardViolationsRecords = async ({ payload }) => {
-    const response = await ApiServices.get(`/aws/policy?time=${payload.time}&date=${payload.date}`, {
-        headers: {
-            'content-type': 'application/json',
-        },
-    });
-    return response;
+    if (payload?.date && payload?.time) {
+        const response = await ApiServices.get(`/aws/summary?time=${payload.time}&date=${payload.date}`, {
+            headers: {
+                'content-type': 'application/json',
+            },
+        });
+        return response;
+    } else if (payload?.date) {
+        const response = await ApiServices.get(`/aws/summary?date=${payload.date}`, {
+            headers: {
+                'content-type': 'application/json',
+            },
+        });
+        return response;
+    } else {
+        const response = await ApiServices.get(`/aws/summary`, {
+            headers: {
+                'content-type': 'application/json',
+            },
+        });
+        return response;
+    }
 };
 
+/***** GET : Get AWS account details Api Call */
 export const fetchAwsAccountDetails = async () => {
     const response = await ApiServices.get(`/aws/accounts`, {
         headers: {
@@ -18,31 +36,43 @@ export const fetchAwsAccountDetails = async () => {
     return response;
 };
 
-export const fetchViolations = async ({ payload }) => {
-    // const response = await ApiServices.get(`/aws/policy=${payload}`, {
-    //     headers: {
-    //         'content-type': 'application/json',
-    //     },
-    // });
-    // return response;
-    console.log(payload);
-
-    const myResponse = {
-        data: {
-            services: [
-                ['Task', 'Hours per Day'],
-                ['Security', 11],
-                ['Compute', 2],
-                ['CDN', 2],
-                ['Storage', 2],
-                ['Data Base', 7], // CSS-style declaration
-            ],
-        },
-    };
-    return myResponse;
+/***** GET : Get Services Api Call */
+export const fetchServicesViolations = async ({ payload }) => {
+    if (payload?.date && payload?.time) {
+        const response = await ApiServices.get(
+            `/aws/service?date=${payload?.date}&time=${payload?.time}&violation_type=${payload?.type}`,
+            {
+                headers: {
+                    'content-type': 'application/json',
+                },
+            }
+        );
+        return response;
+    } else if (payload?.date) {
+        const response = await ApiServices.get(`/aws/service?date=${payload?.date}&violation_type=${payload?.type}`, {
+            headers: {
+                'content-type': 'application/json',
+            },
+        });
+        return response;
+    }
 };
 
-export const fetchPoliciesAndTableViolations = async ({ payload }) => {
+/***** GET : Get Policies Api Call */
+export const fetchPoliciesViolations = async ({ payload }) => {
+    const response = await ApiServices.get(
+        `/aws/service/policyviolation?service_type=${payload?.service_type}&violation_type=${payload?.violation_type}&historyId=${payload?.historyId}`,
+        {
+            headers: {
+                'content-type': 'application/json',
+            },
+        }
+    );
+    return response;
+};
+
+/***** GET : Get Table data Api Call */
+export const fetchTableData = async ({ payload }) => {
     // const response = await ApiServices.get(`/aws/policy=${payload}`, {
     //     headers: {
     //         'content-type': 'application/json',
@@ -53,13 +83,6 @@ export const fetchPoliciesAndTableViolations = async ({ payload }) => {
 
     const myResponse = {
         data: {
-            policies: [
-                ['Task', 'Hours per Day'],
-                ['Violations', 5],
-                ['SQS_Queue', 2],
-                ['SSH_form', 2],
-                ['Unrestricted', 2],
-            ],
             originalRows: [
                 {
                     policyName: 'SQA_Queue_Encrypted_1',

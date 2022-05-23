@@ -2,5 +2,13 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Sen';
+    font-family: 'Open Sans', sans-serif;
+}
+
+/* Google Charts tooltip flickering : resolved */
+svg > g:last-child > g:last-child {
+    pointer-events: none;
+}
+div.google-visualization-tooltip {
+    pointer-events: none;
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 import TextField from '@mui/material/TextField';
@@ -22,7 +22,7 @@ const useStyles = makeStyles(() => ({
         flexGrow: 1,
     },
     dashboardContainer: {
-        fontFamily: 'Sen',
+        fontFamily: 'Open Sans sans-serif',
         background: 'linear-gradient(100.72deg, #192c43 15.97%, #26345a 89.96%)',
         color: '#ffffff',
         height: '100%',
@@ -104,12 +104,15 @@ const useStyles = makeStyles(() => ({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    gridTile: {
+        boxShadow: 'rgba(100, 100, 111, 0.2) 0px 7px 29px 0px',
+        cursor: 'pointer',
+    },
 }));
 
 const Dashboard = ({ history }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
-    const count = useRef(0);
     const [date, setDate] = useState(null);
     const [timeStamp, setTimeStamp] = useState('');
     const [graphData, setGraphData] = useState({
@@ -126,15 +129,23 @@ const Dashboard = ({ history }) => {
             },
         ],
     });
-    const { loading: dashboardLoading, data: dashboardDetails, error } = useSelector((state) => state.dashboardReducer);
+    const {
+        loading: dashboardLoading,
+        data: dashboardDetails,
+        error,
+    } = useSelector((state) => state?.dashboardReducer);
 
     useEffect(() => {
-        if (count.current == 0) {
-            setDate(currentDate());
-            count.current = 1;
-        }
-        if (date) {
-            let formattedDate = currentDate(date);
+        const obj = {
+            date: '',
+            time: '',
+        };
+        dispatch(getDashboardViolation(obj));
+    }, []);
+
+    useEffect(() => {
+        if (date || dashboardDetails?.policyStats?.capturedAt) {
+            let formattedDate = date ? currentDate(date) : currentDate(dashboardDetails?.policyStats?.capturedAt);
             const obj = {
                 date: formattedDate,
                 time: timeStamp,
@@ -149,23 +160,32 @@ const Dashboard = ({ history }) => {
             right: [
                 {
                     ...prevState.right[0],
-                    value: dashboardDetails?.compliance || 0,
+                    value: dashboardDetails?.policyStats?.compliance || 0,
                 },
             ],
             left: [
                 {
                     ...prevState.left[0],
-                    value: 100 - (dashboardDetails?.compliance || 0),
+                    value: 100 - (dashboardDetails?.policyStats?.compliance || 0),
                 },
             ],
         }));
     }, [dashboardDetails]);
 
-    const routesHandler = (link) => {
-        history.push(link);
+    const routesHandler = (link, selectedViolation) => {
+        console.log(link);
+        const detailsObj = {
+            capturedAt: dashboardDetails?.policyStats?.capturedAt || date,
+            timeStamp: timeStamp ? timeStamp : dashboardDetails?.timestamps ? dashboardDetails?.timestamps[0] : '',
+            selectedViolation: selectedViolation,
+        };
+        history.push({
+            pathname: '/details',
+            state: { detail: detailsObj },
+        });
     };
-    const dateChangeHandler = (value) => {
-        setDate(value);
+    const dateChangeHandler = (date) => {
+        setDate(date);
         setTimeStamp('');
     };
     const handleTimeStamp = (event) => {
@@ -204,7 +224,13 @@ const Dashboard = ({ history }) => {
                                 <LocalizationProvider dateAdapter={AdapterDateFns}>
                                     <DatePicker
                                         inputFormat="yyyy/MM/dd"
-                                        value={date}
+                                        value={
+                                            date
+                                                ? date
+                                                : dashboardDetails?.policyStats?.capturedAt
+                                                ? dashboardDetails?.policyStats?.capturedAt
+                                                : null
+                                        }
                                         disabled={false}
                                         onChange={(newValue) => dateChangeHandler(newValue)}
                                         renderInput={(params) => <TextField {...params} />}
@@ -212,7 +238,10 @@ const Dashboard = ({ history }) => {
                                 </LocalizationProvider>
                             </span>
                             <span className={classes.timeStampSelect}>
-                                <FormControl sx={{ minWidth: 100 }}>
+                                <FormControl
+                                    sx={{ minWidth: 100 }}
+                                    disabled={date || dashboardDetails?.policyStats?.capturedAt ? false : true}
+                                >
                                     <Select
                                         value={
                                             timeStamp
@@ -263,8 +292,21 @@ const Dashboard = ({ history }) => {
                                 </Grid>
                             </Grid>
                             <Grid item xs={12} sm={6} md={8} className={classes.right}>
-                                <Grid container>
-                                    <Grid item xs={12} sm={12} md={4}>
+                                <Grid
+                                    container
+                                    spacing={2}
+                                    style={{
+                                        display: 'flex',
+                                    }}
+                                >
+                                    <Grid
+                                        item
+                                        xs={12}
+                                        sm={12}
+                                        md={4}
+                                        className={classes.gridTile}
+                                        onClick={() => routesHandler('/new-violations', 1)}
+                                    >
                                         <Typography
                                             variant="h5"
                                             gutterBottom
@@ -273,32 +315,19 @@ const Dashboard = ({ history }) => {
                                         >
                                             <span className={classes.span_1}></span>New Violations
                                         </Typography>
-                                        <Typography
-                                            variant="h4"
-                                            className={classes.typNumber}
-                                            onClick={() => routesHandler('/new-violations')}
-                                        >
-                                            {dashboardDetails?.violation_count?.new || 0}
+                                        <Typography variant="h4" className={classes.typNumber}>
+                                            {dashboardDetails?.policyStats?.violation_count?.new || 0}
                                         </Typography>
                                     </Grid>
-                                    <Grid item xs={12} sm={12} md={4}>
-                                        <Typography
-                                            variant="h5"
-                                            gutterBottom
-                                            component="div"
-                                            className={classes.violations_2}
-                                        >
-                                            <span className={classes.span_2}></span>Fixed Violations
-                                        </Typography>
-                                        <Typography
-                                            variant="h4"
-                                            className={classes.typNumber}
-                                            onClick={() => routesHandler('/fixed-violations')}
-                                        >
-                                            {dashboardDetails?.violation_count?.fixed || 0}
-                                        </Typography>
-                                    </Grid>
-                                    <Grid item xs={12} sm={12} md={4}>
+
+                                    <Grid
+                                        item
+                                        xs={12}
+                                        sm={12}
+                                        md={4}
+                                        className={classes.gridTile}
+                                        onClick={() => routesHandler('/existing-violations', 2)}
+                                    >
                                         <Typography
                                             variant="h5"
                                             gutterBottom
@@ -307,12 +336,28 @@ const Dashboard = ({ history }) => {
                                         >
                                             <span className={classes.span_3}></span>Existing Violations
                                         </Typography>
+                                        <Typography variant="h4" className={classes.typNumber}>
+                                            {dashboardDetails?.policyStats?.violation_count?.existing || 0}
+                                        </Typography>
+                                    </Grid>
+                                    <Grid
+                                        item
+                                        xs={12}
+                                        sm={12}
+                                        md={4}
+                                        className={classes.gridTile}
+                                        onClick={() => routesHandler('/fixed-violations', 3)}
+                                    >
                                         <Typography
-                                            variant="h4"
-                                            className={classes.typNumber}
-                                            onClick={() => routesHandler('/existing-violations')}
+                                            variant="h5"
+                                            gutterBottom
+                                            component="div"
+                                            className={classes.violations_2}
                                         >
-                                            {dashboardDetails?.violation_count?.existing || 0}
+                                            <span className={classes.span_2}></span>Fixed Violations
+                                        </Typography>
+                                        <Typography variant="h4" className={classes.typNumber}>
+                                            {dashboardDetails?.policyStats?.violation_count?.fixed || 0}
                                         </Typography>
                                     </Grid>
                                 </Grid>
@@ -321,7 +366,7 @@ const Dashboard = ({ history }) => {
                                         <Button
                                             variant="contained"
                                             size="large"
-                                            onClick={() => routesHandler('/all-reports')}
+                                            onClick={() => routesHandler('/all-reports', 0)}
                                             style={{
                                                 backgroundColor: '#2233CC',
                                                 color: '#FFFFFF',
