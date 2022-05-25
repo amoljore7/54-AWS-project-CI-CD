@@ -16,7 +16,7 @@ export const serviceChartOptions = {
     pieHole: 0.5,
     is3D: false,
     tooltip: {
-        isHtml: false,
+        isHtml: true,
         // text: 'value',
     },
     slices: {
@@ -34,7 +34,7 @@ export const policiesChartOptions = {
     pieHole: 0.5,
     is3D: false,
     tooltip: {
-        isHtml: false,
+        isHtml: true,
         // text: 'value',
     },
     slices: {

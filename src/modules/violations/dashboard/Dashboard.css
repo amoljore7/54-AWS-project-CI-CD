@@ -1,0 +1,127 @@
+:root {
+    --complicace_value: 100;
+    --complicace_value_opposite: 0;
+}
+.svg-item {
+    width: 100%;
+    font-size: 16px;
+    margin: 0 auto;
+    animation: donutfade 1s;
+    padding: 20px;
+}
+
+@keyframes donutfade {
+    /* this applies to the whole svg item wrapper */
+    0% {
+        opacity: 0.2;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@media (min-width: 992px) {
+    .svg-item {
+        width: 80%;
+    }
+}
+
+.donut-ring {
+    stroke: #202631;
+}
+
+/* .donut-segment {
+    transform-origin: center;
+    stroke: #ff6200;
+}
+
+.donut-segment-2 {
+    stroke: #5381c6;
+    animation: donut1 3s;
+} */
+
+.donut-segment-3 {
+    stroke: #5381c6;
+    animation: donut2 3s;
+}
+
+.donut-segment-4 {
+    stroke: #f95da4;
+    animation: donut3 3s;
+}
+
+.segment-1 {
+    fill: #ccc;
+}
+.segment-2 {
+    fill: #2233cc;
+}
+.segment-3 {
+    fill: #5381c6;
+}
+.segment-4 {
+    fill: #f95da4;
+}
+
+.donut-percent {
+    animation: donutfadelong 2s;
+}
+
+@keyframes donutfadelong {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes donut1 {
+    0% {
+        stroke-dasharray: 0, 100;
+    }
+    100% {
+        stroke-dasharray: var(--complicace_value), var(--complicace_value_opposite);
+    }
+}
+.donut-text-1 {
+    fill: #5381c6;
+}
+
+.donut-label {
+    font-size: 0.28em;
+    font-weight: 700;
+    line-height: 1;
+    fill: #000;
+    transform: translateY(0.25em);
+}
+
+.donut-percent {
+    font-size: 0.5em;
+    line-height: 1;
+    transform: translateY(0.5em);
+    font-weight: bold;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.donut-data {
+    font-size: 0.12em;
+    line-height: 1;
+    transform: translateY(0.5em);
+    text-align: center;
+    text-anchor: middle;
+    color: #49576d;
+    fill: #49576d;
+    animation: donutfadelong 1s;
+}
+.svg-item {
+    margin-right: 7rem;
+    max-width: 30%;
+    display: inline-block;
+}
+.donut {
+    box-shadow: 5px 5px 15px rgb(0 0 0 / 20%), -5px -5px 15px rgb(255 255 255 / 5%),
+        inset -5px -5px 10px rgb(255 255 255 / 5%), inset 5px 5px 10px rgb(0 0 0 / 20%);
+    border-radius: 50%;
+    width: 20rem;
+}

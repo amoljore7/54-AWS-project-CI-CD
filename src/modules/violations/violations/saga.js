@@ -1,4 +1,3 @@
-/* eslint-disable */
 import { put, takeLatest, all, fork, call } from 'redux-saga/effects';
 import { ViolationsTypes } from './constants';
 import {
@@ -19,14 +18,23 @@ function* servicesViolationsWorker(payload) {
     try {
         yield put({ type: ViolationsTypes.VIOLATIONS_LOADING });
         const { data } = yield call(fetchServicesViolations, payload);
-        const serviceArray = [['Task', 'Hours per Day']];
-        const serviceArrayModify = data?.service?.map((item) => [item?.name, item?.percent]);
-        serviceArray.push(...serviceArrayModify);
+        if (data?.service) {
+            var serviceArray = [['Task', 'Hours per Day', { role: 'tooltip', type: 'string', p: { html: true } }]];
+            const serviceArrayModify = data?.service?.map((item) => [
+                item?.name,
+                item?.percent,
+                `<div style="width">
+                <h4>Violation %: ${item?.percent}</h4>
+                <h4>Violation Count: ${item?.count}</h4>
+                </div>`,
+            ]);
+            serviceArray.push(...serviceArrayModify);
+        }
         const myData = {
-            services: serviceArray,
-            timestamps: data?.timestamps,
+            services: serviceArray || [],
+            timestamps: data?.timestamps || [],
             violation_count: data?.policyStats?.violation_count,
-            historyId: data?.policyStats?.historyId,
+            historyId: data?.policyStats?.historyId || null,
             recordFound: data?.recordFound,
         };
         yield put(successServicesViolations(myData));
@@ -43,11 +51,20 @@ function* policiesViolationsWorker(payload) {
     try {
         yield put({ type: ViolationsTypes.VIOLATIONS_LOADING });
         const { data } = yield call(fetchPoliciesViolations, payload);
-        const policiesArray = [['Task', 'Hours per Day']];
-        const policiesArrayModify = data?.policies?.map((item) => [item?.name, item?.percentage]);
-        policiesArray.push(...policiesArrayModify);
+        if (data?.policies) {
+            var policiesArray = [['Task', 'Hours per Day', { role: 'tooltip', type: 'string', p: { html: true } }]];
+            const policiesArrayModify = data?.policies?.map((item) => [
+                item?.name,
+                item?.percentage,
+                `<div style="width">
+                <h4>Violation %: ${item?.percentage}</h4>
+                <h4>Violation Count: ${item?.violationCount}</h4>
+                </div>`,
+            ]);
+            policiesArray.push(...policiesArrayModify);
+        }
         const myData = {
-            policies: policiesArray,
+            policies: policiesArray || [],
             recordFound: data?.recordFound,
         };
         yield put(successPoliciesViolations(myData));

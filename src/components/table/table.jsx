@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useLayoutEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -8,8 +8,6 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import SearchBar from 'material-ui-search-bar';
 import { makeStyles, Paper } from '@material-ui/core';
-
-import InsideTableRow from './insideTableRow';
 
 const useStyles = makeStyles(() => ({
     root: {
@@ -38,12 +36,21 @@ const CollapsibleTable = ({ TableDataObject = {} }) => {
     const classes = useStyles();
     const [rows, setRows] = useState(TableDataObject?.originalRows);
     const [searched, setSearched] = useState('');
+    var keysData = [];
+
+    useLayoutEffect(() => {
+        setRows(TableDataObject?.originalRows);
+    }, [TableDataObject?.originalRows]);
+
+    if (rows[0] && rows[0]) {
+        keysData = Object.keys(rows[0] && rows[0]);
+    }
 
     //For static search
     const originalRows = TableDataObject?.originalRows;
     const requestSearch = (searchedVal) => {
         const filteredRows = originalRows.filter((row) => {
-            return row.policyName.toLowerCase().includes(searchedVal.toLowerCase());
+            return row['Bucket Name'].toLowerCase().includes(searchedVal.toLowerCase());
         });
         setRows(filteredRows);
     };
@@ -68,7 +75,6 @@ const CollapsibleTable = ({ TableDataObject = {} }) => {
                 <Table>
                     <TableHead className={classes.tableHead}>
                         <TableRow className={classes.tableRow}>
-                            <TableCell />
                             {TableDataObject?.tableHeader.map((ele) => (
                                 <TableCell key={ele} className={classes.tableHeading}>
                                     {ele}
@@ -76,14 +82,15 @@ const CollapsibleTable = ({ TableDataObject = {} }) => {
                             ))}
                         </TableRow>
                     </TableHead>
+
                     <TableBody>
                         {rows &&
                             rows?.map((row) => (
-                                <InsideTableRow
-                                    key={row.policyName}
-                                    row={row}
-                                    tableHeader={TableDataObject?.tableDetailsHeader}
-                                />
+                                <TableRow key={row}>
+                                    {keysData?.map((elementKey, index) => (
+                                        <TableCell key={index}>{row[elementKey]}</TableCell>
+                                    ))}
+                                </TableRow>
                             ))}
                     </TableBody>
                 </Table>

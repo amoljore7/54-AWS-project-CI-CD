@@ -9,7 +9,7 @@ const useStyles = makeStyles(() =>
             zIndex: 1000001,
             left: 0,
             top: 0,
-            background: 'none repeat scroll 0 0 black',
+            // background: 'none repeat scroll 0 0 black',
             opacity: 0.7,
             height: '100%',
             width: '100%',

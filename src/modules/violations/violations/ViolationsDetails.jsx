@@ -102,6 +102,14 @@ const useStyles = makeStyles((theme) => ({
         marginTop: '1.5rem',
         textAlign: 'center',
     },
+    bredScrum: {
+        color: '#022D6D',
+        margin: '15px 0 0 0',
+    },
+    typographyTitle: {
+        color: '#010D20',
+        margin: '15px 0',
+    },
 }));
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -117,8 +125,8 @@ const ViolationsDetails = () => {
     const dispatch = useDispatch();
 
     const location = useLocation();
-    const [value, setValue] = useState(0);
-    const [date, setDate] = useState(null);
+    const [value, setValue] = useState(location?.state?.detail?.selectedViolation || 0);
+    const [date, setDate] = useState(currentDate(location?.state?.detail?.capturedAt) || null);
     const [timeStamp, setTimeStamp] = useState('');
     const [selectedTile, setSelectedTile] = useState('');
     const [serviceValue, setServiceValue] = useState('');
@@ -126,10 +134,6 @@ const ViolationsDetails = () => {
 
     const { loading, services, policies, tableDetails } = useSelector((state) => state?.violationReducer);
 
-    useEffect(() => {
-        setValue(location?.state?.detail?.selectedViolation);
-        setDate(currentDate(location?.state?.detail?.capturedAt));
-    }, [location]);
     useEffect(() => {
         const payload = {
             date,
@@ -149,7 +153,13 @@ const ViolationsDetails = () => {
     }, [serviceValue]);
 
     useEffect(() => {
-        if (serviceValue && policiesValue) dispatch(getTableDetails(policiesValue));
+        const payload = {
+            service_type: serviceValue,
+            historyId: services?.historyId,
+            violation_type: selectedTile,
+            policy_name: policiesValue,
+        };
+        if (serviceValue && policiesValue) dispatch(getTableDetails(payload));
     }, [policiesValue]);
 
     useEffect(() => {
@@ -168,212 +178,219 @@ const ViolationsDetails = () => {
     };
 
     const TableDataObject = {
-        searchPlaceholder: 'search by policy name...',
-        tableHeader: ['Policy Name', 'Sections', 'Categories', 'New', 'Fixed', 'Existing'],
-        tableDetailsHeader: ['Queue URL', 'Queue ARN', 'Encryption', 'Region', 'Owner'],
-        originalRows: tableDetails?.originalRows,
+        searchPlaceholder: 'search by bucket name...',
+        tableHeader: tableDetails?.policyDetails ? Object.keys(tableDetails?.policyDetails[0]) : [],
+        originalRows: tableDetails?.policyDetails || [],
     };
 
-    const serviceClickHandler = (label, value) => {
+    const serviceClickHandler = (label) => {
         if (serviceValue !== label) {
-            console.log('>>>Selected Label----->      ', label);
-            console.log('>>>Selected value---->       ', value);
             setServiceValue(label);
             setPoliciesValue('');
         }
     };
 
-    const policiesClickHandler = (label, value) => {
+    const policiesClickHandler = (label) => {
         if (policiesValue !== label) {
-            console.log('>>>Selected police Label----->      ', label);
-            console.log('>>>Selected police value---->       ', value);
             setPoliciesValue(label);
         }
     };
 
-    if (loading) {
-        return <CircularProgressOverlay />;
-    } else {
-        return (
-            <div className={classes.container}>
-                <Box className={classes.backLinkBox} onClick={() => history.back()}>
-                    <Link className={classes.backLink}>Back to dashboard</Link>
+    return (
+        <div className={classes.container}>
+            {loading && <CircularProgressOverlay />}
+            <Box className={classes.backLinkBox} onClick={() => history.back()}>
+                <Link className={classes.backLink}>Back to dashboard</Link>
+            </Box>
+
+            <RenderIf isTrue={value == 0}>
+                <Typography variant="h4">All Reports</Typography>
+            </RenderIf>
+
+            <RenderIf isTrue={value == 1}>
+                <Typography variant="h4">New Violation</Typography>
+            </RenderIf>
+
+            <RenderIf isTrue={value == 2}>
+                <Typography variant="h4">Existing Violation</Typography>
+            </RenderIf>
+
+            <RenderIf isTrue={value == 3}>
+                <Typography variant="h4">Fixed Violation</Typography>
+            </RenderIf>
+            <div className={classes.datePickerWrapper}>
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DesktopDatePicker
+                        label="Date"
+                        inputFormat="yyyy/MM/dd"
+                        value={date}
+                        onChange={(date) => dateChangeHandler(date)}
+                        renderInput={(params) => <TextField {...params} />}
+                    />
+                </LocalizationProvider>
+                <Box sx={{ minWidth: 100 }} style={{ marginLeft: '15px' }}>
+                    <FormControl fullWidth>
+                        <InputLabel id="demo-simple-select-label">Time</InputLabel>
+                        <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            value={timeStamp ? timeStamp : services?.timestamps ? services?.timestamps[0] : ''}
+                            label="Time"
+                            onChange={handleTimeStamp}
+                        >
+                            {services?.timestamps?.map((ele, index) => (
+                                <MenuItem key={index} value={ele}>
+                                    {ele ? ele?.slice(0, 5) : ''}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
                 </Box>
+            </div>
 
-                <RenderIf isTrue={value == 0}>
-                    <Typography variant="h4">All Reports</Typography>
-                </RenderIf>
-
-                <RenderIf isTrue={value == 1}>
-                    <Typography variant="h4">New Violation</Typography>
-                </RenderIf>
-
-                <RenderIf isTrue={value == 2}>
-                    <Typography variant="h4">Existing Violation</Typography>
-                </RenderIf>
-
-                <RenderIf isTrue={value == 3}>
-                    <Typography variant="h4">Fixed Violation</Typography>
-                </RenderIf>
-                <div className={classes.datePickerWrapper}>
-                    <LocalizationProvider dateAdapter={AdapterDateFns}>
-                        <DesktopDatePicker
-                            label="Date"
-                            inputFormat="yyyy/MM/dd"
-                            value={date}
-                            onChange={(date) => dateChangeHandler(date)}
-                            renderInput={(params) => <TextField {...params} />}
-                        />
-                    </LocalizationProvider>
-                    <Box sx={{ minWidth: 100 }} style={{ marginLeft: '15px' }}>
-                        <FormControl fullWidth>
-                            <InputLabel id="demo-simple-select-label">Time</InputLabel>
-                            <Select
-                                labelId="demo-simple-select-label"
-                                id="demo-simple-select"
-                                value={timeStamp ? timeStamp : services?.timestamps ? services?.timestamps[0] : ''}
-                                label="Time"
-                                onChange={handleTimeStamp}
-                            >
-                                {services?.timestamps?.map((ele, index) => (
-                                    <MenuItem key={index} value={ele}>
-                                        {ele ? ele?.slice(0, 5) : ''}
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </Box>
-                </div>
-
-                <Box sx={{ flexGrow: 1 }} className={classes.tileBox}>
-                    <Grid container spacing={2}>
-                        <Grid
-                            item
-                            xs={12}
-                            sm={6}
-                            md={3}
-                            onClick={() => {
-                                setValue(0), setServiceValue('');
+            <Box sx={{ flexGrow: 1 }} className={classes.tileBox}>
+                <Grid container spacing={2}>
+                    <Grid
+                        item
+                        xs={12}
+                        sm={6}
+                        md={3}
+                        onClick={() => {
+                            setValue(0), setServiceValue(''), setPoliciesValue('');
+                        }}
+                    >
+                        <Item
+                            style={{
+                                borderBottom: `${value == 0 ? '8px solid #022D6D' : ''}`,
+                                boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px',
                             }}
                         >
-                            <Item
-                                style={{
-                                    borderBottom: `${value == 0 ? '8px solid #022D6D' : ''}`,
-                                    boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px',
-                                }}
-                            >
-                                <div className={classes.tileItem}>
-                                    <Typography variant="h5" className={classes.title}>
-                                        Total Violations
-                                    </Typography>
-                                    <div className={classes.count_1}>{services?.violation_count?.total || '00'}</div>
-                                </div>
-                            </Item>
-                        </Grid>
-                        <Grid
-                            item
-                            xs={12}
-                            sm={6}
-                            md={3}
-                            onClick={() => {
-                                setValue(1), setServiceValue('');
-                            }}
-                        >
-                            <Item
-                                style={{
-                                    borderBottom: `${value == 1 ? '8px solid #FF946F' : ''}`,
-                                    boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px',
-                                }}
-                            >
-                                <div className={classes.tileItem}>
-                                    <Typography variant="h5" className={classes.title}>
-                                        New Violation
-                                    </Typography>
-                                    <div className={classes.count_2}>{services?.violation_count?.new || '00'}</div>
-                                </div>
-                            </Item>
-                        </Grid>
-                        <Grid
-                            item
-                            xs={12}
-                            sm={6}
-                            md={3}
-                            onClick={() => {
-                                setValue(2), setServiceValue('');
-                            }}
-                        >
-                            <Item
-                                style={{
-                                    borderBottom: `${value == 2 ? '8px solid #FFEE00' : ''}`,
-                                    boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px',
-                                }}
-                            >
-                                <div className={classes.tileItem}>
-                                    <Typography variant="h5" className={classes.title}>
-                                        Existing Violation
-                                    </Typography>
-                                    <div className={classes.count_3}>{services?.violation_count?.existing || '00'}</div>
-                                </div>
-                            </Item>
-                        </Grid>
-                        <Grid
-                            item
-                            xs={12}
-                            sm={6}
-                            md={3}
-                            onClick={() => {
-                                setValue(3), setServiceValue('');
-                            }}
-                        >
-                            <Item
-                                style={{
-                                    borderBottom: `${value == 3 ? '8px solid #299D21' : ''}`,
-                                    boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px',
-                                }}
-                            >
-                                <div className={classes.tileItem}>
-                                    <Typography variant="h5" className={classes.title}>
-                                        Fixed Violation
-                                    </Typography>
-                                    <div className={classes.count_4}>{services?.violation_count?.fixed || '00'}</div>
-                                </div>
-                            </Item>
-                        </Grid>
+                            <div className={classes.tileItem}>
+                                <Typography variant="h5" className={classes.title}>
+                                    Total Violations
+                                </Typography>
+                                <div className={classes.count_1}>{services?.violation_count?.total || '00'}</div>
+                            </div>
+                        </Item>
                     </Grid>
-                </Box>
-
-                <>
-                    <Paper className={classes.chartPaper}>
-                        <Grid container direction="row" justifyContent="space-evenly" alignItems="center">
-                            <Grid item xs={12} sm={12} md={!isEmpty(policies) ? 6 : 12}>
-                                {!isEmpty(services?.services) ? (
-                                    <Chart
-                                        title={'AWS Services'}
-                                        chartData={services?.services}
-                                        clickHandler={serviceClickHandler}
-                                        selectedValue={serviceValue}
-                                        options={serviceChartOptions}
-                                    />
-                                ) : (
-                                    <Typography variant="h5">Services Not found !</Typography>
-                                )}
-                            </Grid>
-
-                            {!isEmpty(policies) && (
-                                <Grid item xs={12} sm={12} md={6}>
-                                    <Chart
-                                        title={'Policies'}
-                                        chartData={policies?.policies}
-                                        clickHandler={policiesClickHandler}
-                                        selectedValue={policiesValue}
-                                        options={policiesChartOptions}
-                                    />
-                                </Grid>
+                    <Grid
+                        item
+                        xs={12}
+                        sm={6}
+                        md={3}
+                        onClick={() => {
+                            setValue(1), setServiceValue(''), setPoliciesValue('');
+                        }}
+                    >
+                        <Item
+                            style={{
+                                borderBottom: `${value == 1 ? '8px solid #FF946F' : ''}`,
+                                boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px',
+                            }}
+                        >
+                            <div className={classes.tileItem}>
+                                <Typography variant="h5" className={classes.title}>
+                                    New Violation
+                                </Typography>
+                                <div className={classes.count_2}>{services?.violation_count?.new || '00'}</div>
+                            </div>
+                        </Item>
+                    </Grid>
+                    <Grid
+                        item
+                        xs={12}
+                        sm={6}
+                        md={3}
+                        onClick={() => {
+                            setValue(2), setServiceValue(''), setPoliciesValue('');
+                        }}
+                    >
+                        <Item
+                            style={{
+                                borderBottom: `${value == 2 ? '8px solid #FFEE00' : ''}`,
+                                boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px',
+                            }}
+                        >
+                            <div className={classes.tileItem}>
+                                <Typography variant="h5" className={classes.title}>
+                                    Existing Violation
+                                </Typography>
+                                <div className={classes.count_3}>{services?.violation_count?.existing || '00'}</div>
+                            </div>
+                        </Item>
+                    </Grid>
+                    <Grid
+                        item
+                        xs={12}
+                        sm={6}
+                        md={3}
+                        onClick={() => {
+                            setValue(3), setServiceValue(''), setPoliciesValue('');
+                        }}
+                    >
+                        <Item
+                            style={{
+                                borderBottom: `${value == 3 ? '8px solid #299D21' : ''}`,
+                                boxShadow: 'rgba(0, 0, 0, 0.24) 0px 3px 8px',
+                            }}
+                        >
+                            <div className={classes.tileItem}>
+                                <Typography variant="h5" className={classes.title}>
+                                    Fixed Violation
+                                </Typography>
+                                <div className={classes.count_4}>{services?.violation_count?.fixed || '00'}</div>
+                            </div>
+                        </Item>
+                    </Grid>
+                </Grid>
+            </Box>
+            <Typography className={classes.bredScrum} variant="h6">{`DashboardPage =>${
+                value == 0
+                    ? 'Total Violations'
+                    : value == 1
+                    ? 'New Violations'
+                    : value == 2
+                    ? 'Existing Violations'
+                    : 'Fixed Violations'
+            } ${serviceValue ? '=>' : ''} ${serviceValue} ${policiesValue ? '=>' : ''} ${policiesValue} `}</Typography>
+            <>
+                <Paper className={classes.chartPaper}>
+                    <Grid container direction="row" justifyContent="space-evenly" alignItems="center">
+                        <Grid item xs={12} sm={12} md={6}>
+                            {!isEmpty(services?.services) ? (
+                                <Chart
+                                    title={'Violations AWS serviced'}
+                                    chartData={services?.services}
+                                    clickHandler={serviceClickHandler}
+                                    selectedValue={serviceValue}
+                                    options={serviceChartOptions}
+                                />
+                            ) : (
+                                <Typography variant="h5">Violations AWS serviced Not found !</Typography>
                             )}
                         </Grid>
-                    </Paper>
 
-                    {!isEmpty(tableDetails?.originalRows && TableDataObject) && (
+                        <Grid item xs={12} sm={12} md={6}>
+                            {!isEmpty(policies) && (
+                                <Chart
+                                    title={'Violations Policies'}
+                                    chartData={policies?.policies}
+                                    clickHandler={policiesClickHandler}
+                                    selectedValue={policiesValue}
+                                    options={policiesChartOptions}
+                                />
+                            )}
+                        </Grid>
+                    </Grid>
+                </Paper>
+
+                {!isEmpty(TableDataObject?.originalRows) && (
+                    <>
+                        <Typography variant="h6" className={classes.typographyTitle}>
+                            <b>Showing results for AWS services </b>
+                            {serviceValue} <b>&</b> {policiesValue}
+                        </Typography>
+
                         <Paper className={classes.tablePaper}>
                             <Grid container spacing={2} className={classes.GridSpace}>
                                 <Grid item xs={12} sm={12} md={12}>
@@ -381,11 +398,11 @@ const ViolationsDetails = () => {
                                 </Grid>
                             </Grid>
                         </Paper>
-                    )}
-                </>
-            </div>
-        );
-    }
+                    </>
+                )}
+            </>
+        </div>
+    );
 };
 
 ViolationsDetails.propTypes = {
